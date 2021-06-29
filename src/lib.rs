@@ -5,3 +5,4 @@ mod misc;
 mod number_symbol;
 mod symbol;
 mod text_symbol;
+mod variable;

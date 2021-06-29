@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn is_number_symbol() {
-        assert_eq!(Ok(("", Symbol::Number("12.4"))), number_symbol(" 12.4"));
-        assert_eq!(Ok(("", Symbol::Number("0.72"))), number_symbol(" 0.72  "));
+        assert_eq!(number_symbol(" 12.4"), Ok(("", Symbol::Number("12.4"))));
+        assert_eq!(number_symbol(" 0.72  "), Ok(("", Symbol::Number("0.72"))));
     }
 }

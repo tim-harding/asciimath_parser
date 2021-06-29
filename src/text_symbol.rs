@@ -167,11 +167,11 @@ mod tests {
 
     #[test]
     fn is_greek_symbol() {
-        assert_eq!(Ok(("", Symbol::Upsilon)), text_symbol("    upsilon "));
+        assert_eq!(text_symbol("    upsilon "), Ok(("", Symbol::Upsilon)));
     }
 
     #[test]
     fn is_text_symbol() {
-        assert_eq!(Ok(("", Symbol::Text("dy"))), text_symbol(" dy  "));
+        assert_eq!(text_symbol(" dy  "), Ok(("", Symbol::Text("dy"))));
     }
 }
