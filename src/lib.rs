@@ -13,7 +13,7 @@ mod symbol;
 
 use symbol::Symbol;
 
-fn numeric_constant(s: &str) -> IResult<&str, Symbol> {
+fn number_symbol(s: &str) -> IResult<&str, Symbol> {
     whitespaced(map(
         recognize(pair(digits, opt(pair(tag("."), digits)))),
         |s| Symbol::Number(s),
@@ -28,11 +28,11 @@ fn is_digit(c: char) -> bool {
     c.is_ascii_digit()
 }
 
-fn text_constant(s: &str) -> IResult<&str, Symbol> {
-    map(whitespaced(take_while1(is_alpha)), map_text_constant)(s)
+fn text_symbol(s: &str) -> IResult<&str, Symbol> {
+    map(whitespaced(take_while1(is_alpha)), map_text_symbol)(s)
 }
 
-pub fn whitespaced<I, O, E, F>(f: F) -> impl FnMut(I) -> IResult<I, O, E>
+fn whitespaced<I, O, E, F>(f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
     I: InputTakeAtPosition,
     E: ParseError<I>,
@@ -46,10 +46,11 @@ fn is_alpha(c: char) -> bool {
     c.is_ascii_alphabetic()
 }
 
-fn map_text_constant(s: &str) -> Symbol {
+fn map_text_symbol(s: &str) -> Symbol {
     use Symbol::*;
 
     match s {
+        // Greek
         "alpha" => Alpha,
         "beta" => Beta,
         "gamma" => Gamma,
@@ -87,6 +88,7 @@ fn map_text_constant(s: &str) -> Symbol {
         "omega" => Omega,
         "Omega" => OmegaBig,
 
+        // Arrows
         "uarr" | "uparrow" => Up,
         "darr" | "downarrow" => Down,
         "rarr" | "rightarrow" => Right,
@@ -101,6 +103,99 @@ fn map_text_constant(s: &str) -> Symbol {
         "lArr" | "Leftarrow" => LeftBig,
         "hArr" | "Leftrightarrow" => LeftRightBig,
 
+        // Operation
+        "cdot" => DotCenter,
+        "ast" => Asterisk,
+        "star" => Star,
+        "backslash" | "setminus" => Backslash,
+        "div" => Divide,
+        "times" | "xx" => Times,
+        "ltimes" => TimesLeft,
+        "rtimes" => TimesRight,
+        "bowtie" => Bowtie,
+        "circ" => Circle,
+        "oplus" => CirclePlus,
+        "otimes" | "ox" => CircleTimes,
+        "odot" => CircleDot,
+        "sum" => Summation,
+        "prod" => Product,
+        "wedge" => Wedge,
+        "bigwedge" => WedgeBig,
+        "vv" | "vee" => Vee,
+        "vvv" | "bigvee" => VeeBig,
+        "nn" | "cap" => Cap,
+        "nnn" | "bigcap" => CapBig,
+        "uu" | "cup" => Cup,
+        "uuu" | "bigcup" => CupBig,
+        
+        // Miscellaneous
+        "int" => Integral,
+        "oint" => IntegralSurface,
+        "del" | "partial" => Del,
+        "grad" | "nabla" => Nabla,
+        "pm" => PlusMinus,
+        "oo" | "infty" => Infinity,
+        "aleph" => Aleph,
+        "therefore" => Therefore,
+        "because" => Because,
+        "ldots" => DotsLow,
+        "cdots" => DotsCenter,
+        "vdots" => DotsVertical,
+        "ddots" => DotsDiagonal,
+        "quad" => SpaceLong,
+        "angle" => Angle,
+        "frown" => Frown,
+        "triangle" => Triangle,
+        "diamond" => Diamond,
+        "square" => Square,
+        "lfloor" => FloorLeft,
+        "rfloor" => FloorRight,
+        "lceiling" => CeilingLeft,
+        "rceiling" => CeilingRight,
+        "emptyset" => SetEmpty,
+        "CC" => SetComplex,
+        "NN" => SetNatural,
+        "QQ" => SetRational,
+        "RR" => SetReal,
+        "ZZ" => SetInteger,
+        
+        // Relations
+        "ne" => EqualNot,
+        "lt" => Less,
+        "le" => LessEqual,
+        "ll" | "mlt" => LessLess,
+        "gt" => Greater,
+        "ge" => GreaterEqual,
+        "gg" | "mgt" => GreaterGreater,
+        "prec" => Preceded,
+        "preceq" => PrecededEqual,
+        "succ" => Succeeded,
+        "succeq" => SucceededEqual,
+        "in" => In,
+        "notin" => InNot,
+        "sub" | "subset" => Subset,
+        "sube" | "subseteq" => SubsetEqual,
+        "sup" | "supset" => Superset,
+        "supe" | "supseteq" => SupersetEqual,
+        "equiv" => Equivalent,
+        "cong" => Congruous,
+        "approx" => Approximate,
+        "prop" | "propto" => Proportional,
+        
+        // Logial
+        "and" => And,
+        "or" => Or,
+        "not" | "neg" => Not,
+        "implies" => Implies,
+        "if" => If,
+        "iif" => IfAndOnlyIf,
+        "AA" | "forall" => ForAll,
+        "EE" | "exists" => Exists,
+        "bot" => UpTack,
+        "TT" | "top" => DownTack,
+        "vdash" => Turnstile,
+        "models" => Models,
+
         s => Text(s),
     }
 }
@@ -111,20 +206,20 @@ mod tests {
 
     #[test]
     fn is_greek_symbol() {
-        assert_eq!(Ok(("", Symbol::Upsilon)), text_constant("    upsilon "));
+        assert_eq!(Ok(("", Symbol::Upsilon)), text_symbol("    upsilon "));
     }
 
     #[test]
     fn is_text_symbol() {
-        assert_eq!(Ok(("", Symbol::Text("dy"))), text_constant(" dy  "));
+        assert_eq!(Ok(("", Symbol::Text("dy"))), text_symbol(" dy  "));
     }
 
     #[test]
     fn is_number_symbol() {
-        assert_eq!(Ok(("", Symbol::Number("12.4"))), numeric_constant(" 12.4"));
+        assert_eq!(Ok(("", Symbol::Number("12.4"))), number_symbol(" 12.4"));
         assert_eq!(
             Ok(("", Symbol::Number("0.72"))),
-            numeric_constant(" 0.72  ")
+            number_symbol(" 0.72  ")
         );
     }
 }
