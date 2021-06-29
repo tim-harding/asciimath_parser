@@ -1,7 +1,19 @@
-use crate::{misc::whitespaced, symbol::Symbol};
-use nom::{bytes::complete::take_while1, combinator::map, IResult};
+use crate::{literal::Literal, misc::whitespaced};
+use nom::{
+    bytes::complete::{tag, take_while, take_while1},
+    combinator::map,
+    sequence::delimited,
+    IResult,
+};
 
-pub fn text_symbol(s: &str) -> IResult<&str, Symbol> {
+pub fn raw_text(s: &str) -> IResult<&str, Literal> {
+    whitespaced(map(
+        delimited(tag("\""), take_while(is_alpha), tag("\"")),
+        |s| Literal::RawText(s),
+    ))(s)
+}
+
+pub fn text_symbol(s: &str) -> IResult<&str, Literal> {
     whitespaced(map(take_while1(is_alpha), map_text_symbol))(s)
 }
 
@@ -9,8 +21,8 @@ fn is_alpha(c: char) -> bool {
     c.is_ascii_alphabetic()
 }
 
-fn map_text_symbol(s: &str) -> Symbol {
-    use Symbol::*;
+fn map_text_symbol(s: &str) -> Literal {
+    use Literal::*;
 
     match s {
         // Greek
@@ -157,7 +169,7 @@ fn map_text_symbol(s: &str) -> Symbol {
         "vdash" => Turnstile,
         "models" => Models,
 
-        s => Text(s),
+        s => Symbol(s),
     }
 }
 
@@ -167,11 +179,19 @@ mod tests {
 
     #[test]
     fn is_greek_symbol() {
-        assert_eq!(text_symbol("    upsilon "), Ok(("", Symbol::Upsilon)));
+        assert_eq!(text_symbol("    upsilon "), Ok(("", Literal::Upsilon)));
     }
 
     #[test]
     fn is_text_symbol() {
-        assert_eq!(text_symbol(" dy  "), Ok(("", Symbol::Text("dy"))));
+        assert_eq!(text_symbol(" dy  "), Ok(("", Literal::Symbol("dy"))));
+    }
+
+    #[test]
+    fn is_raw_text() {
+        assert_eq!(
+            raw_text(" \"things and stuff\"  "),
+            Ok(("", Literal::RawText("things and stuff")))
+        );
     }
 }

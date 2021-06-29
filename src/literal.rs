@@ -1,7 +1,19 @@
+use crate::{
+    look_alike_symbol::look_alike_symbol,
+    number_symbol::number_symbol,
+    text_symbol::{raw_text, text_symbol},
+};
+use nom::{branch::alt, IResult};
+
+pub fn literal(s: &str) -> IResult<&str, Literal> {
+    alt((look_alike_symbol, raw_text, text_symbol, number_symbol))(s)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Symbol<'a> {
-    Text(&'a str),
+pub enum Literal<'a> {
+    Symbol(&'a str),
     Number(&'a str),
+    RawText(&'a str),
 
     // Greek
     Alpha,
@@ -139,7 +151,7 @@ pub enum Symbol<'a> {
     Approximate,
     Proportional,
 
-    // Logial
+    // Logical
     And,
     Or,
     Not,
@@ -151,4 +163,30 @@ pub enum Symbol<'a> {
     DownTack,
     Turnstile,
     Models,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_look_alike_symbol() {
+        assert_eq!(literal("  \\   "), Ok(("", Literal::SpaceShort)));
+    }
+
+    #[test]
+    fn is_text_symbol() {
+        assert_eq!(literal("    AA "), Ok(("", Literal::ForAll)));
+        assert_eq!(literal(" x  "), Ok(("", Literal::Symbol("x"))));
+    }
+
+    #[test]
+    fn is_number_symbol() {
+        assert_eq!(literal("42"), Ok(("", Literal::Number("42"))));
+    }
+
+    #[test]
+    fn is_raw_text() {
+        assert_eq!(literal("\"Hello\""), Ok(("", Literal::RawText("Hello"))));
+    }
 }

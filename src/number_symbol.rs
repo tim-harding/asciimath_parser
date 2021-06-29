@@ -1,4 +1,4 @@
-use crate::{misc::whitespaced, symbol::Symbol};
+use crate::{literal::Literal, misc::whitespaced};
 use nom::{
     bytes::complete::{tag, take_while1},
     combinator::{map, opt, recognize},
@@ -6,10 +6,10 @@ use nom::{
     IResult,
 };
 
-pub fn number_symbol(s: &str) -> IResult<&str, Symbol> {
+pub fn number_symbol(s: &str) -> IResult<&str, Literal> {
     whitespaced(map(
         recognize(pair(digits, opt(pair(tag("."), digits)))),
-        |s| Symbol::Number(s),
+        |s| Literal::Number(s),
     ))(s)
 }
 
@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn is_number_symbol() {
-        assert_eq!(number_symbol(" 12.4"), Ok(("", Symbol::Number("12.4"))));
-        assert_eq!(number_symbol(" 0.72  "), Ok(("", Symbol::Number("0.72"))));
+        assert_eq!(number_symbol(" 12.4"), Ok(("", Literal::Number("12.4"))));
+        assert_eq!(number_symbol(" 0.72  "), Ok(("", Literal::Number("0.72"))));
     }
 }
