@@ -53,9 +53,8 @@ pub enum Symbol<'a> {
     RightDoubleTail,
     LeftRight,
     LeftRightBig,
-    To,
     MapsTo,
-    
+
     // Operation
     Plus,
     Minus,
@@ -83,7 +82,7 @@ pub enum Symbol<'a> {
     CapBig,
     Cup,
     CupBig,
-    
+
     // Miscellaneous
     Integral,
     IntegralSurface,
@@ -115,7 +114,7 @@ pub enum Symbol<'a> {
     SetRational,
     SetReal,
     SetInteger,
-    
+
     // Relations
     Equal,
     EqualNot,
@@ -139,12 +138,11 @@ pub enum Symbol<'a> {
     Congruous,
     Approximate,
     Proportional,
-    
+
     // Logial
     And,
     Or,
     Not,
-    Implies,
     If,
     IfAndOnlyIf,
     ForAll,
@@ -154,4 +152,3 @@ pub enum Symbol<'a> {
     Turnstile,
     Models,
 }
-
