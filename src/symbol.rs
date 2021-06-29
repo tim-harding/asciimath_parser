@@ -1,9 +1,7 @@
-use crate::error::AmError;
-use std::convert::TryFrom;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Symbol<'a> {
-    TextVar(&'a str),
+    Text(&'a str),
+    Number(&'a str),
 
     Alpha,
     Beta,
@@ -62,7 +60,8 @@ impl<'a> Into<&'a str> for Symbol<'a> {
         use Symbol::*;
 
         match self {
-            TextVar(s) => s,
+            Text(s) => s,
+            Number(s) => s,
 
             Alpha => "alpha",
             Beta => "beta",

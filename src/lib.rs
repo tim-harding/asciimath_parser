@@ -1,38 +1,52 @@
 use nom::{
-    bytes::complete::take_while, character::complete::multispace0, combinator::map,
-    sequence::delimited, IResult,
+    bytes::complete::{tag, take_while, take_while1},
+    character::complete::multispace0,
+    combinator::{map, opt, recognize},
+    error::ParseError,
+    sequence::{delimited, pair},
+    AsChar, IResult, InputTakeAtPosition, Parser,
 };
 
 mod error;
 mod font;
 mod symbol;
 
-use error::AmError;
-use font::Font;
 use symbol::Symbol;
 
-// Goals:
-// - Syntax highlighting
-// - Conversion to other formats
-// - Common math representation as a rendering source
+fn numeric_constant(s: &str) -> IResult<&str, Symbol> {
+    whitespaced(map(
+        recognize(pair(digits, opt(pair(tag("."), digits)))),
+        |s| Symbol::Number(s),
+    ))(s)
+}
 
-// Take text while ascii alpha
-// Single character, take as variable
-// Multiple character, take as greek
-// Failing that, parser error
+fn digits(s: &str) -> IResult<&str, &str> {
+    take_while1(is_digit)(s)
+}
 
-fn text_var(s: &str) -> IResult<&str, Symbol> {
-    map(
-        delimited(multispace0, take_while(is_alpha), multispace0),
-        map_text_var,
-    )(s)
+fn is_digit(c: char) -> bool {
+    c.is_ascii_digit()
+}
+
+fn text_constant(s: &str) -> IResult<&str, Symbol> {
+    map(whitespaced(take_while1(is_alpha)), map_text_constant)(s)
+}
+
+pub fn whitespaced<I, O, E, F>(f: F) -> impl FnMut(I) -> IResult<I, O, E>
+where
+    I: InputTakeAtPosition,
+    E: ParseError<I>,
+    F: Parser<I, O, E>,
+    <I as InputTakeAtPosition>::Item: AsChar + Clone,
+{
+    delimited(multispace0, f, multispace0)
 }
 
 fn is_alpha(c: char) -> bool {
     c.is_ascii_alphabetic()
 }
 
-fn map_text_var(s: &str) -> Symbol {
+fn map_text_constant(s: &str) -> Symbol {
     use Symbol::*;
 
     match s {
@@ -87,7 +101,7 @@ fn map_text_var(s: &str) -> Symbol {
         "lArr" | "Leftarrow" => LeftBig,
         "hArr" | "Leftrightarrow" => LeftRightBig,
 
-        s => TextVar(s),
+        s => Text(s),
     }
 }
 
@@ -96,9 +110,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        assert_eq!(Ok(("", Symbol::Upsilon)), text_var("    upsilon "));
-        assert_eq!(Ok(("", Symbol::RightBig)), text_var("rArr "));
-        assert_eq!(Ok(("", Symbol::TextVar("dy"))), text_var("dy"))
+    fn is_greek_symbol() {
+        assert_eq!(Ok(("", Symbol::Upsilon)), text_constant("    upsilon "));
+    }
+
+    #[test]
+    fn is_text_symbol() {
+        assert_eq!(Ok(("", Symbol::Text("dy"))), text_constant(" dy  "));
+    }
+
+    #[test]
+    fn is_number_symbol() {
+        assert_eq!(Ok(("", Symbol::Number("12.4"))), numeric_constant(" 12.4"));
+        assert_eq!(
+            Ok(("", Symbol::Number("0.72"))),
+            numeric_constant(" 0.72  ")
+        );
     }
 }
