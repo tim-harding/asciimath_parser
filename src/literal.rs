@@ -1,7 +1,6 @@
 use crate::{
-    look_alike_symbol::look_alike_symbol,
-    number_symbol::number_symbol,
-    text_symbol::{raw_text, text_symbol},
+    look_alike_symbol::look_alike_symbol, number_symbol::number_symbol, raw_text::raw_text,
+    text_symbol::text_symbol,
 };
 use nom::{branch::alt, IResult};
 
@@ -9,11 +8,11 @@ pub fn literal(s: &str) -> IResult<&str, Literal> {
     alt((look_alike_symbol, raw_text, text_symbol, number_symbol))(s)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Literal<'a> {
     Symbol(&'a str),
     Number(&'a str),
-    RawText(&'a str),
+    RawText(String),
 
     // Greek
     Alpha,
@@ -187,6 +186,9 @@ mod tests {
 
     #[test]
     fn is_raw_text() {
-        assert_eq!(literal("\"Hello\""), Ok(("", Literal::RawText("Hello"))));
+        assert_eq!(
+            literal("\"Hello\""),
+            Ok(("", Literal::RawText("Hello".to_string())))
+        );
     }
 }

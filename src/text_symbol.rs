@@ -1,17 +1,5 @@
 use crate::{literal::Literal, misc::whitespaced};
-use nom::{
-    bytes::complete::{tag, take_while, take_while1},
-    combinator::map,
-    sequence::delimited,
-    IResult,
-};
-
-pub fn raw_text(s: &str) -> IResult<&str, Literal> {
-    whitespaced(map(
-        delimited(tag("\""), take_while(is_alpha), tag("\"")),
-        |s| Literal::RawText(s),
-    ))(s)
-}
+use nom::{bytes::complete::take_while1, combinator::map, IResult};
 
 pub fn text_symbol(s: &str) -> IResult<&str, Literal> {
     whitespaced(map(take_while1(is_alpha), map_text_symbol))(s)
@@ -185,13 +173,5 @@ mod tests {
     #[test]
     fn is_text_symbol() {
         assert_eq!(text_symbol(" dy  "), Ok(("", Literal::Symbol("dy"))));
-    }
-
-    #[test]
-    fn is_raw_text() {
-        assert_eq!(
-            raw_text(" \"things and stuff\"  "),
-            Ok(("", Literal::RawText("things and stuff")))
-        );
     }
 }

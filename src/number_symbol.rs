@@ -1,6 +1,7 @@
 use crate::{literal::Literal, misc::whitespaced};
 use nom::{
     bytes::complete::{tag, take_while1},
+    character::complete::char,
     combinator::{map, opt, recognize},
     sequence::pair,
     IResult,
@@ -8,7 +9,7 @@ use nom::{
 
 pub fn number_symbol(s: &str) -> IResult<&str, Literal> {
     whitespaced(map(
-        recognize(pair(digits, opt(pair(tag("."), digits)))),
+        recognize(pair(digits, opt(pair(char('.'), digits)))),
         |s| Literal::Number(s),
     ))(s)
 }

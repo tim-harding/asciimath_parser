@@ -1,4 +1,6 @@
-use nom::{branch::alt, bytes::complete::tag, combinator::value, IResult};
+use nom::{
+    branch::alt, bytes::complete::tag, character::complete::char, combinator::value, IResult,
+};
 
 use crate::{literal::Literal, misc::whitespaced};
 
@@ -257,31 +259,31 @@ fn to(s: &str) -> IResult<&str, Literal> {
 }
 
 fn less(s: &str) -> IResult<&str, Literal> {
-    value(Literal::Less, tag("<"))(s)
+    value(Literal::Less, char('<'))(s)
 }
 
 fn greater(s: &str) -> IResult<&str, Literal> {
-    value(Literal::Greater, tag(">"))(s)
+    value(Literal::Greater, char('>'))(s)
 }
 
 fn equal(s: &str) -> IResult<&str, Literal> {
-    value(Literal::Equal, tag("="))(s)
+    value(Literal::Equal, char('='))(s)
 }
 
 fn circle(s: &str) -> IResult<&str, Literal> {
-    value(Literal::Circle, tag("@"))(s)
+    value(Literal::Circle, char('@'))(s)
 }
 
 fn plus(s: &str) -> IResult<&str, Literal> {
-    value(Literal::Plus, tag("+"))(s)
+    value(Literal::Plus, char('+'))(s)
 }
 
 fn minus(s: &str) -> IResult<&str, Literal> {
-    value(Literal::Minus, tag("-"))(s)
+    value(Literal::Minus, char('-'))(s)
 }
 
 fn dot_center(s: &str) -> IResult<&str, Literal> {
-    value(Literal::DotCenter, tag("*"))(s)
+    value(Literal::DotCenter, char('*'))(s)
 }
 
 #[cfg(test)]
